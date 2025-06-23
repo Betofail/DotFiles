@@ -21,6 +21,13 @@ source = ./windowrules.conf
 # ========== Configuración de usuario ===========
 source = ./userprefs.conf
 
+# ========== Workflows (integración especial) ===
+# Puedes tener varios archivos en hypr/workflows y sourcearlos aquí
+# source = ./workflows/default.conf
+# source = ./workflows/editing.conf
+# source = ./workflows/gaming.conf
+# Agrega aquí más workflows según vayas creando scripts para Hyprland
+
 # ========== Barra de estado, bloqueo e idle ====
 #exec-once = waybar
 #exec-once = hyprlock
@@ -64,5 +71,3 @@ decoration {
 # source = ./animations/fade.conf
 # source = ./animations/slide.conf
 
-# ========== Workflow activo (IMPORTANTE: mantener al final) ==========
-source = ./active_workflow.conf
