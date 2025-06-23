@@ -26,7 +26,6 @@
     "temperature",
     "custom/separator",
     "pulseaudio",
-    "custom/media",
     "battery",
     "network",
     "tray"
