@@ -1,41 +1,122 @@
+/* Catppuccin Mocha - Waybar Clean Theme
+ * Adaptado para una apariencia moderna y minimalista
+ * Basado en https://github.com/catppuccin/waybar/blob/main/themes/mocha.css
+ */
+
+@define-color base      #1e1e2e;
+@define-color mantle    #181825;
+@define-color surface0  #313244;
+@define-color surface1  #45475a;
+@define-color surface2  #585b70;
+@define-color overlay0  #6c7086;
+@define-color overlay1  #7f849c;
+@define-color overlay2  #9399b2;
+@define-color text      #cdd6f4;
+@define-color subtext0  #a6adc8;
+@define-color subtext1  #bac2de;
+@define-color blue      #89b4fa;
+@define-color lavender  #b4befe;
+@define-color sapphire  #74c7ec;
+@define-color sky       #89dceb;
+@define-color teal      #94e2d5;
+@define-color green     #a6e3a1;
+@define-color yellow    #f9e2af;
+@define-color peach     #fab387;
+@define-color maroon    #eba0ac;
+@define-color red       #f38ba8;
+@define-color mauve     #cba6f7;
+@define-color pink      #f5c2e7;
+@define-color flamingo  #f2cdcd;
+@define-color rosewater #f5e0dc;
+
+/* General */
 * {
-  font-family: "monospace", "DejaVu Sans Mono", "sans-serif";
+  border: none;
+  border-radius: 0;
+  font-family: JetBrainsMono Nerd Font, monospace;
   font-size: 13px;
-  background: #222831;
-  color: #eeeeee;
+  min-height: 0;
 }
 
 window#waybar {
-  background: #222831;
-  border: none;
+  background: @base;
+  color: @text;
+  border-radius: 10px;
+  border: 2px solid @surface0;
+  margin: 6px 8px;
+}
+
+/* Workspaces */
+#workspaces {
+  background: @surface0;
+  border-radius: 8px;
+  margin: 2px 6px;
+  padding: 0 6px;
 }
 
 #workspaces button {
-  background: #393e46;
-  color: #eeeeee;
+  background: transparent;
+  color: @overlay1;
+  border-radius: 6px;
+  padding: 4px 10px;
   margin: 0 2px;
-  padding: 2px 8px;
-  border-radius: 4px;
-  border: none;
+  transition: all 0.2s;
 }
 
 #workspaces button.active {
-  background: #00adb5;
-  color: #222831;
+  background: @blue;
+  color: @base;
 }
 
-#clock, #cpu, #memory, #temperature, #pulseaudio, #battery {
-  background: #393e46;
-  color: #eeeeee;
-  margin: 0 4px;
-  padding: 2px 8px;
-  border-radius: 4px;
+#workspaces button.urgent {
+  background: @red;
+  color: @base;
 }
 
-#battery.charging {
-  color: #00ff8a;
+#workspaces button:hover {
+  background: @surface1;
+  color: @text;
 }
 
-#battery.warning, #battery.critical {
-  color: #ff6f61;
+/* Modules */
+#clock, #cpu, #memory, #temperature, #pulseaudio, #battery, #network, #tray, #custom-media, #custom-updates {
+  background: @surface0;
+  color: @text;
+  border-radius: 8px;
+  margin: 0 6px;
+  padding: 4px 12px;
+  min-width: 0;
 }
+
+#pulseaudio.muted {
+  color: @yellow;
+}
+
+#battery.charging, #battery.plugged {
+  color: @green;
+}
+
+#battery.critical:not(.charging) {
+  color: @red;
+}
+
+/* Tooltips */
+tooltip {
+  background: @mantle;
+  color: @text;
+  border-radius: 8px;
+  border: 1px solid @blue;
+}
+
+/* Separators */
+#custom-separator {
+  color: @overlay0;
+  margin: 0 10px;
+  font-size: 18px;
+}
+
+/* Clean spacing for system tray */
+#tray {
+  padding-right: 10px;
+}
+

@@ -1,31 +1,142 @@
 {
+  // Catppuccin Mocha - Waybar Config
+  // Guarda este archivo como ~/.config/waybar/config.jsonc
+  // Asegúrate de que la línea de style apunte a tu theme Catppuccin Mocha
   "layer": "top",
   "position": "top",
-  "modules-left": [ "hyprland/workspaces" ],
-  "modules-center": [ "clock" ],
-  "modules-right": [ "cpu", "memory", "temperature", "pulseaudio", "battery" ],
+  "height": 32,
+  "margin-top": 8,
+  "margin-left": 8,
+  "margin-right": 8,
+  "modules-left": [
+    "custom/launcher",
+    "custom/separator",
+    "hyprland/workspaces",
+    "custom/separator",
+    "hyprland/window"
+  ],
+  "modules-center": [
+    "custom/separator",
+    "clock"
+  ],
+  "modules-right": [
+    "custom/separator",
+    "cpu",
+    "memory",
+    "temperature",
+    "custom/separator",
+    "pulseaudio",
+    "custom/media",
+    "battery",
+    "network",
+    "tray"
+  ],
+
+  "custom/launcher": {
+    "format": "", // (puedes cambiar el icono a lo que prefieras)
+    "tooltip": false
+  },
+
+  "custom/separator": {
+    "format": "  ", // usa un espacio o un icono como "" o "│"
+    "tooltip": false
+  },
+
   "hyprland/workspaces": {
-    "format": "{icon}"
+    "on-click": "activate",
+    "format": "{icon}",
+    "format-icons": {
+      "1": "󰎤",
+      "2": "󰖟",
+      "3": "󰎄",
+      "4": "󰙯",
+      "5": "󰳻",
+      "6": "󰻨",
+      "7": "󰖟",
+      "8": "󰻬",
+      "9": "󰻮",
+      "default": ""
+    }
   },
+
+  "hyprland/window": {
+    "max-length": 60,
+    "separate-outputs": true,
+    "format": "{}"
+  },
+
   "clock": {
-    "format": "{:%H:%M}"
+    "interval": 1,
+    "format": "{:%d/%m %H:%M}",
+    "tooltip": true,
   },
+
   "cpu": {
-    "format": "CPU {usage}%"
+    "format": " {usage}%",
+    "tooltip": true
   },
+
   "memory": {
-    "format": "RAM {used:0.1f}G"
+    "format": "󰍛 {used:0.1f}G",
+    "tooltip": true
   },
+
   "temperature": {
     "critical-threshold": 80,
-    "format": "{temperatureC}°C"
+    "format": " {temperatureC}°C",
+    "tooltip": true
   },
+
   "pulseaudio": {
-    "format": "VOL {volume}% {icon}",
-    "format-muted": "MUTE"
+    "format": "{icon} {volume}%",
+    "format-bluetooth": " {icon} {volume}%",
+    "format-muted": "󰸈 muted",
+    "format-icons": {
+      "headphones": "󰋋",
+      "handsfree": "󰋎",
+      "headset":  "󰋋",
+      "phone":     "󰤗",
+      "portable":  "󰂸",
+      "car":       "󰄋",
+      "default": ["󰕿", "󰖀", "󰕾", "󰕾"]
+    },
+    "scroll-step": 5
   },
+
+  "custom/media": {
+    "interval": 2,
+    "exec": "~/.config/waybar/scripts/mediaplayer.sh",
+    "return-type": "json",
+    "format": "{icon} {artist} - {title}",
+    "format-icons": {
+      "spotify": "",
+      "default": "󰎆"
+    },
+    "on-click": "playerctl play-pause"
+  },
+
   "battery": {
-    "format": "{capacity}% {icon}",
-    "format-charging": "{capacity}% ⚡"
+    "states": {
+      "good": 95,
+      "warning": 30,
+      "critical": 10
+    },
+    "format": "{icon} {capacity}%",
+    "format-charging": "󰂄 {capacity}%",
+    "format-plugged": "󰚥 {capacity}%",
+    "format-alt": "{time}",
+    "format-icons": ["󰂎", "󰁿", "󰁻", "󰁹", "󰂄", "󱟢"]
+  },
+
+  "network": {
+    "format-wifi": " {essid} ({signalStrength}%)",
+    "format-ethernet": "󰈀 {ifname}",
+    "format-disconnected": "󰤮",
+    "tooltip": true
+  },
+
+  "tray": {
+    "icon-size": 18,
+    "spacing": 12
   }
 }
