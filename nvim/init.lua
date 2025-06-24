@@ -157,30 +157,33 @@ require("lazy").setup({
 
   -- Syntax highlighting con Treesitter
   {
-    "nvim-treesitter/nvim-treesitter",
-    build = ":TSUpdate",
-    config = function()
-      require("nvim-treesitter.configs").setup({
-        ensure_installed = {
-          "bash", "c", "cpp", "css", "dockerfile", "go", "html", "javascript",
-          "json", "lua", "markdown", "python", "rust", "typescript", "yaml",
+  "nvim-treesitter/nvim-treesitter",
+  build = ":TSUpdate",
+  config = function()
+    require("nvim-treesitter.configs").setup({
+      ensure_installed = {
+        "bash", "c", "cpp", "css", "dockerfile", "go", "html", "javascript",
+        "json", "lua", "markdown", "python", "rust", "typescript", "yaml",
+      },
+      sync_install = false,  -- Instalar parsers asincrónicamente
+      auto_install = true,   -- Instalar parsers automáticamente
+      highlight = {
+        enable = true,
+        additional_vim_regex_highlighting = false,
+      },
+      indent = { enable = true },
+      incremental_selection = {
+        enable = true,
+        keymaps = {
+          init_selection = "<C-space>",
+          node_incremental = "<C-space>",
+          scope_incremental = "<C-s>",
+          node_decremental = "<C-backspace>",
         },
-        highlight = {
-          enable = true,
-          additional_vim_regex_highlighting = false,
-        },
-        indent = { enable = true },
-        incremental_selection = {
-          enable = true,
-          keymaps = {
-            init_selection = "<C-space>",
-            node_incremental = "<C-space>",
-            scope_incremental = "<C-s>",
-            node_decremental = "<C-backspace>",
-          },
-        },
-      })
-    end,
+      },
+      modules = {},
+    })
+  end,
   },
 
   -- Telescope (buscador)
@@ -244,7 +247,7 @@ require("lazy").setup({
     config = function()
       require("mason-lspconfig").setup({
         ensure_installed = {
-          "lua_ls", "pyright", "typescript-language-server", "html", "cssls", "jsonls", "yamlls",
+          "lua_ls", "pyright", "html", "cssls", "jsonls", "yamlls",
           "bashls", "dockerls", "gopls", "rust_analyzer"
         },
         automatic_installation = true,
@@ -276,16 +279,6 @@ require("lazy").setup({
             telemetry = {
               enable = false,
             },
-          },
-        },
-      })
-
-      -- Configuración específica para typescript-language-server (antes tsserver)
-      lspconfig.tsserver.setup({
-        capabilities = capabilities,
-        init_options = {
-          preferences = {
-            disableSuggestions = false,
           },
         },
       })
@@ -506,37 +499,55 @@ require("lazy").setup({
   },
 
   -- Which-key para recordar atajos
-  {
-    "folke/which-key.nvim",
-    event = "VeryLazy",
-    init = function()
-      vim.o.timeout = true
-      vim.o.timeoutlen = 300
-    end,
-    config = function()
-      require("which-key").setup({
-        window = {
-          border = "single",
-          position = "bottom",
+{
+  "folke/which-key.nvim",
+  event = "VeryLazy",
+  init = function()
+    vim.o.timeout = true
+    vim.o.timeoutlen = 300
+  end,
+  config = function()
+    local which_key = require("which-key")
+
+    which_key.setup({
+      -- Cambiar window por win (corrige la advertencia)
+      win = {
+        border = "single",
+        position = "bottom",
+        margin = { 1, 0, 1, 0 },
+        padding = { 1, 2, 1, 2 },
+      },
+      -- Otras opciones...
+      plugins = {
+        marks = true,
+        registers = true,
+        spelling = { enabled = false },
+        presets = {
+          operators = true,
+          motions = true,
+          text_objects = true,
+          windows = true,
+          nav = true,
+          z = true,
+          g = true,
         },
-      })
+      },
+    })
 
-      -- Define grupos de teclas
-      require("which-key").register({
-        f = { name = "Archivos/Buscar" },
-        g = { name = "Git" },
-        b = { name = "Buffer" },
-        t = { name = "Terminal" },
-        d = { name = "Docker" },
-        c = { name = "Copilot/Código" },
-        x = { name = "Diagnósticos" },
-        h = { name = "Hunks (Git)" },
-        r = { name = "Refactorizar" },
-      }, { prefix = "<leader>" })
-    end,
-  },
-
-  -- Terminal integrado
+    -- Actualiza el formato de los grupos de teclas al nuevo estilo
+    which_key.add({
+      { "<leader>b", group = "Buffer" },
+      { "<leader>c", group = "Copilot/Código" },
+      { "<leader>d", group = "Docker" },
+      { "<leader>f", group = "Archivos/Buscar" },
+      { "<leader>g", group = "Git" },
+      { "<leader>h", group = "Hunks (Git)" },
+      { "<leader>r", group = "Refactorizar" },
+      { "<leader>t", group = "Terminal" },
+      { "<leader>x", group = "Diagnósticos" },
+    })
+  end,
+},  -- Terminal integrado
   {
     "akinsho/toggleterm.nvim",
     version = "*",
@@ -638,6 +649,40 @@ require("lazy").setup({
     },
   },
 })
+
+-- Configuración del clipboard
+vim.opt.clipboard = "unnamedplus"  -- Usar el clipboard del sistema
+
+-- Configuración específica del clipboard provider
+if vim.fn.has('wsl') == 1 then
+  -- En WSL, usa clip.exe de Windows
+  vim.g.clipboard = {
+    name = "WslClipboard",
+    copy = {
+      ["+"] = "clip.exe",
+      ["*"] = "clip.exe",
+    },
+    paste = {
+      ["+"] = 'powershell.exe -c [Console]::Out.Write($(Get-Clipboard -Raw).tostring().replace("`r", ""))',
+      ["*"] = 'powershell.exe -c [Console]::Out.Write($(Get-Clipboard -Raw).tostring().replace("`r", ""))',
+    },
+    cache_enabled = 0,
+  }
+elseif os.getenv("WAYLAND_DISPLAY") ~= nil then
+  -- En Wayland
+  vim.g.clipboard = {
+    name = "wl-clipboard",
+    copy = {
+      ["+"] = "wl-copy",
+      ["*"] = "wl-copy",
+    },
+    paste = {
+      ["+"] = "wl-paste",
+      ["*"] = "wl-paste",
+    },
+    cache_enabled = 1,
+  }
+end
 
 -----------------------
 -- LSP configuración --
