@@ -498,7 +498,8 @@ require("lazy").setup({
     end,
   },
 
-  -- Which-key para recordar atajos
+
+-- Which-key para recordar atajos
 {
   "folke/which-key.nvim",
   event = "VeryLazy",
@@ -507,21 +508,14 @@ require("lazy").setup({
     vim.o.timeoutlen = 300
   end,
   config = function()
-    local which_key = require("which-key")
-
-    which_key.setup({
-      -- Cambiar window por win (corrige la advertencia)
-      win = {
-        border = "single",
-        position = "bottom",
-        margin = { 1, 0, 1, 0 },
-        padding = { 1, 2, 1, 2 },
-      },
-      -- Otras opciones...
+    require("which-key").setup({
       plugins = {
         marks = true,
         registers = true,
-        spelling = { enabled = false },
+        spelling = {
+          enabled = false,
+          suggestions = 20,
+        },
         presets = {
           operators = true,
           motions = true,
@@ -532,10 +526,24 @@ require("lazy").setup({
           g = true,
         },
       },
+      -- La propiedad 'window' es obsoleta, usa 'win' en su lugar
+      win = {
+        -- 'position' no es una propiedad válida en 'win', quitémosla
+        border = "single",
+        padding = { 2, 2, 2, 2 },
+      },
+      layout = {
+        height = { min = 4, max = 25 },
+        width = { min = 20, max = 50 },
+        spacing = 3,
+        align = "left",
+      },
+      ignore_missing = false,
+      hidden = { "<silent>", "<cmd>", "<Cmd>", "<CR>", "^:", "^ ", "^call ", "^lua " },
+      show_help = true,
+      triggers = "auto",
     })
-
-    -- Actualiza el formato de los grupos de teclas al nuevo estilo
-    which_key.add({
+    require("which-key").add({
       { "<leader>b", group = "Buffer" },
       { "<leader>c", group = "Copilot/Código" },
       { "<leader>d", group = "Docker" },
@@ -547,7 +555,9 @@ require("lazy").setup({
       { "<leader>x", group = "Diagnósticos" },
     })
   end,
-},  -- Terminal integrado
+},
+
+  -- Terminal integrado
   {
     "akinsho/toggleterm.nvim",
     version = "*",
@@ -567,7 +577,6 @@ require("lazy").setup({
         shell = vim.o.shell,
         float_opts = {
           border = "curved",
-          winblend = 0,
           highlights = {
             border = "Normal",
             background = "Normal",
