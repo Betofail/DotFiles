@@ -1,3 +1,4 @@
+---@diagnostic disable: undefined-global
 -- Configuración principal de Neovim
 -- Autor: Betofail
 -- Fecha: 2025-06-24
@@ -139,19 +140,15 @@ require("lazy").setup({
     end,
   },
 
-  -- Explorador de archivos
+  -- Explorador de archivos: yazi.nvim (reemplaza nvim-tree)
   {
-    "nvim-tree/nvim-tree.lua",
-    version = "*",
-    lazy = false,
-    dependencies = { "nvim-tree/nvim-web-devicons" },
+    "mikavilpas/yazi.nvim",
+    cmd = { "Yazi" },
+    keys = {
+      { "<leader>e", "<cmd>Yazi<cr>", desc = "Abrir Yazi (explorador)" }
+    },
     config = function()
-      require("nvim-tree").setup({
-        sort_by = "case_sensitive",
-        view = { width = 30 },
-        renderer = { group_empty = true },
-        filters = { dotfiles = false },
-      })
+      require("yazi").setup({})
     end,
   },
 
@@ -775,9 +772,8 @@ map('n', '<leader>fh', '<CMD>Telescope help_tags<CR>', { desc = "Buscar ayuda" }
 map('n', '<leader>fr', '<CMD>Telescope oldfiles<CR>', { desc = "Archivos recientes" })
 map('n', '<leader>fd', '<CMD>Telescope diagnostics<CR>', { desc = "Diagnósticos" })
 
--- NvimTree
-map('n', '<leader>e', '<CMD>NvimTreeToggle<CR>', { desc = "Explorador de archivos" })
-map('n', '<leader>o', '<CMD>NvimTreeFocus<CR>', { desc = "Enfocar explorador" })
+-- Yazi.nvim (nuevo explorador)
+map('n', '<leader>e', '<cmd>Yazi<cr>', { desc = "Abrir Yazi (explorador)" })
 
 -- Git
 map('n', '<leader>gg', '<CMD>LazyGit<CR>', { desc = "LazyGit" })
