@@ -1,4 +1,4 @@
----@diagnostic disable: undefined-global
+--- @diagnostic disable: undefined-global
 -- Configuración principal de Neovim
 -- Autor: Betofail
 -- Fecha: 2025-06-24
@@ -37,5 +37,6 @@ require("plugins")
 
 -- Cargar otras configuracione
 require("config.keymaps")
+require("config.yazi")
 -- require("config.autocmds")
 -- etc.
