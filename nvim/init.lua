@@ -7,36 +7,51 @@
 -- Archivo principal de configuración de Neovim
 
 -- Configuraciones básicas
-vim.g.mapleader = " " -- Tecla líder
-vim.g.maplocalleader = " "
+vim.g.mapleader = " "
+vim.g.maplocalleader = ","
 
--- Opciones globales
-vim.opt.number = true         -- Números de línea
-vim.opt.relativenumber = true -- Números de línea relativos
-vim.opt.mouse = "a"           -- Soporte para mouse
-vim.opt.clipboard = "unnamedplus" -- Sincronizar con clipboard del sistema
-vim.opt.breakindent = true    -- Indentación de líneas envueltas
-vim.opt.undofile = true       -- Guardar historial de deshacer
-vim.opt.ignorecase = true     -- Buscar sin distinguir mayúsculas
-vim.opt.smartcase = true      -- Pero respetar mayúsculas si se incluyen
-vim.opt.signcolumn = "yes"    -- Mostrar columna de signos siempre
-vim.opt.updatetime = 250      -- Actualización más rápida
-vim.opt.timeoutlen = 300      -- Tiempo para combinaciones de teclas
-vim.opt.splitright = true     -- Abrir ventanas a la derecha
-vim.opt.splitbelow = true     -- Abrir ventanas abajo
-vim.opt.termguicolors = true  -- Colores en terminal
+-- Opciones generales de Neovim
+vim.opt.number = true
+vim.opt.relativenumber = true
+vim.opt.autoindent = true
+vim.opt.tabstop = 2
+vim.opt.shiftwidth = 2
+vim.opt.expandtab = true
+vim.opt.smarttab = true
+vim.opt.wrap = false
+vim.opt.cursorline = true
+vim.opt.termguicolors = true
+vim.opt.background = "dark"
+vim.opt.signcolumn = "yes"
+vim.opt.backup = false
+vim.opt.swapfile = false
+vim.opt.undofile = true
+vim.opt.ignorecase = true
+vim.opt.smartcase = true
+vim.opt.showmode = false
+vim.opt.updatetime = 300
+vim.opt.timeout = true
+vim.opt.timeoutlen = 300
+vim.opt.scrolloff = 8
+vim.opt.sidescrolloff = 8
+vim.opt.clipboard = "unnamedplus"
 
--- Configuración de la sangría
-vim.opt.expandtab = true      -- Usar espacios en lugar de tabs
-vim.opt.tabstop = 2           -- Un tab equivale a 2 espacios
-vim.opt.shiftwidth = 2        -- Sangría de 2 espacios
-vim.opt.smartindent = true    -- Indentación inteligente
+-- Inicializar lazy.nvim para gestión de plugins
+local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+if not vim.loop.fs_stat(lazypath) then
+  vim.fn.system({
+    "git",
+    "clone",
+    "--filter=blob:none",
+    "https://github.com/folke/lazy.nvim.git",
+    "--branch=stable", -- última versión estable
+    lazypath,
+  })
+end
+vim.opt.rtp:prepend(lazypath)
 
--- Cargar el gestor de plugins lazy.nvim
-require("plugins")
+-- Cargar plugins desde el archivo de plugins
+require("lazy").setup("plugins")
 
--- Cargar otras configuracione
-require("config.keymaps")
-require("config.yazi")
--- require("config.autocmds")
--- etc.
+-- Cargar todas las configuraciones desde el módulo config
+require("config")

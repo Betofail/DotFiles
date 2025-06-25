@@ -15,7 +15,8 @@ wk.setup({
       g = true,
     },
   },
-  window = {
+  -- Uso de win en lugar de window (obsoleto)
+  win = {
     border = "single",
     position = "bottom",
     margin = { 1, 0, 1, 0 },
@@ -32,14 +33,12 @@ wk.setup({
   show_keys = true,
 })
 
--- Registrar grupos de teclas
+-- Registrar grupos de teclas con el nuevo formato recomendado
 wk.register({
-  ["<leader>"] = {
-    f = { name = "Archivo/Buscar" },
-    g = { name = "Git" },
-    h = { name = "Harpoon" },
-    l = { name = "LSP" },
-    t = { name = "Terminal/Pestañas" },
-    y = { name = "Yazi" },
-  },
+  { "<leader>f", group = "Archivo/Buscar" },
+  { "<leader>g", group = "Git" },
+  { "<leader>h", group = "Harpoon" },
+  { "<leader>l", group = "LSP" },
+  { "<leader>t", group = "Terminal/Pestañas" },
+  { "<leader>y", group = "Yazi" },
 })
