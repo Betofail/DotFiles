@@ -93,4 +93,34 @@ return {
   {
     'numToStr/Comment.nvim',
   },
+  {
+    "echasnovski/mini.icons",
+    version = false, -- usar la última versión
+    config = function()
+      require("mini.icons").setup()
+    end,
+  },
+  {
+    "mikavilpas/yazi.nvim",
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+    },
+    opts = {
+      -- Configuración opcional aquí - si prefieres mantenerla en el archivo plugins
+      executable = "yazi",
+      floating = true,
+      height_ratio = 0.8,
+      width_ratio = 0.8,
+      project_root_markers = {
+        ".git",
+        "Cargo.toml",
+        "package.json",
+        "Makefile",
+      },
+    },
+  },
+  {  
+    "mason-org/mason.nvim",
+    opts = {}
+  }
 }
