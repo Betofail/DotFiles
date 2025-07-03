@@ -177,25 +177,42 @@ configure_starship() {
     log "Starship ya está configurado en ~/.bashrc."
   fi
 
-  # Crear un archivo de configuración mínimo para Starship
-  log "Creando archivo de configuración mínimo para Starship en ~/.config/starship.toml"
-  mkdir -p ~/.config
-  cat >~/.config/starship.toml <<'EOL'
-# ~/.config/starship.toml
+  # --- Lógica de Enlace Simbólico ---
+  local DOTFILES_DIR
+  DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
+  local SOURCE_STARSHIP_CONFIG="$DOTFILES_DIR/starship/starship.toml"
+  local DEST_STARSHIP_CONFIG="$HOME/.config/starship.toml"
 
-# Inserta una nueva línea entre los prompts para mayor claridad.
-add_newline = true
+  # Verificar que tu archivo de configuración exista en el repositorio
+  if [ ! -f "$SOURCE_STARSHIP_CONFIG" ]; then
+    log "${RED}Error: No se encontró 'starship.toml' en la raíz de tu repositorio (${DOTFILES_DIR}).${NC}"
+    log "${YELLOW}Omitiendo creación de enlace simbólico para Starship.${NC}"
+    return
+  fi
 
-# Reemplaza el símbolo de "❯" en el prompt por "➜".
-[character]
-success_symbol = "[➜](bold green)"
-error_symbol = "[✗](bold red)"
+  # Crear el directorio ~/.config si no existe
+  mkdir -p "$(dirname "$DEST_STARSHIP_CONFIG")"
 
-# Desactiva el módulo de paquete de lenguaje (e.g., "via 📦 v1.0.0") para un prompt más limpio.
-[package]
-disabled = true
-EOL
-  echo -e "${GREEN}✓ Archivo de configuración ~/.config/starship.toml creado.${NC}"
+  # Manejar configuración existente en el destino
+  if [ -e "$DEST_STARSHIP_CONFIG" ]; then
+    if [ -L "$DEST_STARSHIP_CONFIG" ] && [ "$(readlink "$DEST_STARSHIP_CONFIG")" = "$SOURCE_STARSHIP_CONFIG" ]; then
+      log "El enlace simbólico para Starship ya está configurado correctamente."
+      return
+    else
+      log "Haciendo copia de seguridad de la configuración de Starship existente..."
+      mv "$DEST_STARSHIP_CONFIG" "${DEST_STARSHIP_CONFIG}.bak.$(date +%Y%m%d_%H%M%S)"
+      echo -e "${GREEN}✓ Copia de seguridad creada.${NC}"
+    fi
+  fi
+
+  # Crear el enlace simbólico
+  log "Creando enlace simbólico para starship.toml"
+  ln -s "$SOURCE_STARSHIP_CONFIG" "$DEST_STARSHIP_CONFIG"
+  if [ $? -eq 0 ]; then
+    echo -e "${GREEN}✓ Archivo de configuración de Starship enlazado con éxito.${NC}"
+  else
+    echo -e "${RED}Error al crear el enlace simbólico para Starship.${NC}"
+  fi
 }
 
 # --- Función Principal ---
@@ -250,7 +267,7 @@ main() {
   echo -e "${GREEN}✓ ¡Proceso completado!${NC}"
   echo -e "${GREEN}=====================================${NC}"
   echo -e "${BLUE}→ Se han instalado y verificado las herramientas de desarrollo.${NC}"
-  echo -e "${BLUE}→ Se ha configurado un prompt mínimo con Starship.${NC}"
+  echo -e "${BLUE}→ Tu configuración de Starship ha sido enlazada desde tu repositorio.${NC}"
   echo -e "${YELLOW}IMPORTANTE: Cierra sesión y vuelve a iniciarla para usar Docker sin sudo y ver el nuevo prompt.${NC}"
   log "Script finalizado."
 }
