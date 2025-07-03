@@ -80,7 +80,7 @@ remove_old_configs() {
   log "Limpieza de configuraciones de shell completada."
 }
 
-# --- Funciones de Instalación (Solo para Arch) ---
+# --- Funciones de Instalación y Configuración (Solo para Arch) ---
 
 install_docker_arch() {
   log "Verificando Docker, Docker Compose y Docker Buildx"
@@ -161,6 +161,43 @@ install_mise() {
   fi
 }
 
+configure_starship() {
+  log "Configurando Starship para Bash"
+  if ! command -v starship &>/dev/null; then
+    log "Starship no está instalado. Omitiendo configuración."
+    return
+  fi
+
+  # Añadir la inicialización de Starship a .bashrc si no existe
+  if ! grep -q 'eval "$(starship init bash)"' ~/.bashrc; then
+    log "Agregando la inicialización de Starship a ~/.bashrc"
+    echo -e '\n# Inicializar Starship para un prompt personalizado\neval "$(starship init bash)"' >>~/.bashrc
+    echo -e "${GREEN}✓ Starship añadido a ~/.bashrc.${NC}"
+  else
+    log "Starship ya está configurado en ~/.bashrc."
+  fi
+
+  # Crear un archivo de configuración mínimo para Starship
+  log "Creando archivo de configuración mínimo para Starship en ~/.config/starship.toml"
+  mkdir -p ~/.config
+  cat >~/.config/starship.toml <<'EOL'
+# ~/.config/starship.toml
+
+# Inserta una nueva línea entre los prompts para mayor claridad.
+add_newline = true
+
+# Reemplaza el símbolo de "❯" en el prompt por "➜".
+[character]
+success_symbol = "[➜](bold green)"
+error_symbol = "[✗](bold red)"
+
+# Desactiva el módulo de paquete de lenguaje (e.g., "via 📦 v1.0.0") para un prompt más limpio.
+[package]
+disabled = true
+EOL
+  echo -e "${GREEN}✓ Archivo de configuración ~/.config/starship.toml creado.${NC}"
+}
+
 # --- Función Principal ---
 
 main() {
@@ -188,9 +225,12 @@ main() {
   # 5. Instalar mise
   install_mise
 
-  # 6. Verificación final
+  # 6. Configurar Starship
+  configure_starship
+
+  # 7. Verificación final
   log "Validando la instalación de herramientas clave..."
-  local tools_to_check=("docker" "docker-compose" "cargo" "nvim" "git" "eza" "bat" "yazi" "zellij" "lazygit" "lazydocker" "k9s" "mise")
+  local tools_to_check=("docker" "docker-compose" "cargo" "nvim" "git" "eza" "bat" "yazi" "zellij" "lazygit" "lazydocker" "k9s" "mise" "starship")
   local errors=0
   echo -e "\n${BLUE}=== Verificación Final de Herramientas ===${NC}"
   for tool in "${tools_to_check[@]}"; do
@@ -210,8 +250,8 @@ main() {
   echo -e "${GREEN}✓ ¡Proceso completado!${NC}"
   echo -e "${GREEN}=====================================${NC}"
   echo -e "${BLUE}→ Se han instalado y verificado las herramientas de desarrollo.${NC}"
-  echo -e "${BLUE}→ No se han creado alias. El script se ha limitado a la instalación.${NC}"
-  echo -e "${YELLOW}IMPORTANTE: Cierra sesión y vuelve a iniciarla para usar Docker sin sudo.${NC}"
+  echo -e "${BLUE}→ Se ha configurado un prompt mínimo con Starship.${NC}"
+  echo -e "${YELLOW}IMPORTANTE: Cierra sesión y vuelve a iniciarla para usar Docker sin sudo y ver el nuevo prompt.${NC}"
   log "Script finalizado."
 }
 
