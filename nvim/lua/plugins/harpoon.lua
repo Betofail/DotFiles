@@ -9,7 +9,7 @@ return {
 
     -- Atajos para Harpoon
     local map = vim.keymap.set
-    map("n", "<leader>ha", function() harpoon:list():append() end, { desc = "Harpoon: Añadir archivo" })
+    map("n", "<leader>ha", function() harpoon:list():add() end, { desc = "Harpoon: Añadir archivo" })
     map("n", "<leader>hm", function() harpoon.ui:toggle_quick_menu(harpoon:list()) end, { desc = "Harpoon: Mostrar menú" })
 
     -- Salto rápido a archivos marcados

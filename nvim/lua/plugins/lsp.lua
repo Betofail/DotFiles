@@ -42,6 +42,8 @@ return {
         "tsserver",
         "gopls",
         "bashls",
+        "biome",
+        "cssls",
       },
       handlers = {
         function(server_name)
