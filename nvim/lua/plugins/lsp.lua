@@ -6,6 +6,28 @@ return {
     "hrsh7th/cmp-nvim-lsp",
   },
   config = function()
+    vim.diagnostic.config({
+      virtual_text = true,
+      underline = true,
+      update_in_insert = false,
+      severity_sort = true,
+      signs = {
+        text = {
+          [vim.diagnostic.severity.ERROR] = "",
+          [vim.diagnostic.severity.WARN]  = "",
+          [vim.diagnostic.severity.HINT]  = "",
+          [vim.diagnostic.severity.INFO]  = "",
+        },
+      },
+    })
+
+    vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, {
+      border = "rounded"
+    })
+
+    vim.lsp.handlers["textDocument/signatureHelp"] = vim.lsp.with(vim.lsp.handlers.signature_help, {
+      border = "rounded"
+    })
     local on_attach = function(client, bufnr)
       local map = vim.keymap.set
       local opts = { buffer = bufnr, noremap = true, silent = true }
@@ -15,20 +37,7 @@ return {
       map('n', 'gr', vim.lsp.buf.references, opts)
       map('n', 'gi', vim.lsp.buf.implementation, opts)
       map('n', 'K', vim.lsp.buf.hover, opts)
-      map('n', '<leader>ca', vim.lsp.buf.code_action, opts)
-      map('n', '<leader>rn', vim.lsp.buf.rename, opts)
-      map('n', '<leader>sd', vim.diagnostic.open_float, opts)
-      map('n', ']d', vim.diagnostic.goto_next, opts)
-      map('n', '[d', vim.diagnostic.goto_prev, opts)
     end
-
-    -- Configuración para los iconos de diagnóstico
-    local signs = { Error = " ", Warn = " ", Hint = " ", Info = " " }
-    for type, icon in pairs(signs) do
-      local hl = "DiagnosticSign" .. type
-      vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = hl })
-    end
-
 
     local lspconfig = require("lspconfig")
     local mason_lspconfig = require("mason-lspconfig")
@@ -36,10 +45,8 @@ return {
 
     require("mason").setup()
     mason_lspconfig.setup({
-      -- Lista de servidores LSP a instalar
       ensure_installed = {
         "lua_ls",
-        "tsserver",
         "gopls",
         "bashls",
         "biome",
