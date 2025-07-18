@@ -39,7 +39,6 @@ return {
       map('n', 'K', vim.lsp.buf.hover, opts)
     end
 
-    local lspconfig = require("lspconfig")
     local mason_lspconfig = require("mason-lspconfig")
     local capabilities = require('cmp_nvim_lsp').default_capabilities()
 
@@ -51,10 +50,12 @@ return {
         "bashls",
         "biome",
         "cssls",
+        "tsserver",
       },
       handlers = {
+        -- Volvemos a la configuración estándar
         function(server_name)
-          lspconfig[server_name].setup({
+          require("lspconfig")[server_name].setup({
             on_attach = on_attach,
             capabilities = capabilities,
           })
