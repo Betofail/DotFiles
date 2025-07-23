@@ -26,3 +26,6 @@ map("n", "<leader>q", "<cmd>bdelete<CR>", { desc = "Cerrar Buffer Actual" })
 
 -- Limpiar búsqueda resaltada
 map("n", "<Esc>", "<cmd>nohlsearch<CR>")
+
+-- Explorador de Archivos
+map("n", "<leader>e", "<cmd>Explore<cr>", { desc = "Alternar Explorador de Archivos" })

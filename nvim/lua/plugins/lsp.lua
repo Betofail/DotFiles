@@ -6,6 +6,7 @@ return {
     "hrsh7th/cmp-nvim-lsp",
   },
   config = function()
+    -- Configuración de diagnósticos
     vim.diagnostic.config({
       virtual_text = true,
       underline = true,
@@ -21,6 +22,7 @@ return {
       },
     })
 
+    -- Bordes redondeados para las ventanas flotantes del LSP
     vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, {
       border = "rounded"
     })
@@ -28,6 +30,8 @@ return {
     vim.lsp.handlers["textDocument/signatureHelp"] = vim.lsp.with(vim.lsp.handlers.signature_help, {
       border = "rounded"
     })
+
+    -- Función que se ejecuta cuando un servidor se adjunta a un buffer
     local on_attach = function(client, bufnr)
       local map = vim.keymap.set
       local opts = { buffer = bufnr, noremap = true, silent = true }
@@ -42,18 +46,8 @@ return {
     local mason_lspconfig = require("mason-lspconfig")
     local capabilities = require('cmp_nvim_lsp').default_capabilities()
 
-    require("mason").setup()
     mason_lspconfig.setup({
-      ensure_installed = {
-        "lua_ls",
-        "gopls",
-        "bashls",
-        "biome",
-        "cssls",
-        "tsserver",
-      },
       handlers = {
-        -- Volvemos a la configuración estándar
         function(server_name)
           require("lspconfig")[server_name].setup({
             on_attach = on_attach,
