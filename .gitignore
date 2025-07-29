@@ -1,0 +1,41 @@
+# Archivos generados por el sistema operativo
+.DS_Store
+Thumbs.db
+
+# Archivos temporales y de respaldo
+*.swp
+*.swo
+*.bak
+*.tmp
+*~
+
+# Archivos de logs
+*.log
+
+# Node modules (si usas Node.js para CSS)
+node_modules/
+
+# Entornos virtuales y dependencias (ejemplo para Lua con luarocks)
+luarocks/
+
+# Archivos compilados de Lua
+*.luac
+
+# Archivos de configuración de editor
+.vscode/
+.idea/
+*.code-workspace
+
+# Archivos para configuraciones personales
+.env
+.secret
+*.local
+
+# Archivos de caché
+.cache/
+*.cache
+
+# Otros archivos comunes
+tags
+ctags
+.opencode
