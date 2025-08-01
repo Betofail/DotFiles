@@ -1,0 +1,39 @@
+# ==========================================================
+#  Configuración de Alacritty (Equivalente a tu config de Kitty)
+#  Tema: Catppuccin Mocha
+# ==========================================================
+
+[window]
+# Equivalente a 'window_padding_width'
+padding = { x = 25, y = 25 }
+
+# Equivalente a 'background_opacity'
+# Descomenta la siguiente línea para activar la transparencia
+# opacity = 0.95
+
+# Equivalente a 'hide_window_decorations'
+# Opciones: "full", "transparent", "buttonless", "none"
+decorations = "full"
+
+[font]
+# Equivalente a 'font_family' y 'font_size'
+# ¡Asegúrate de que el nombre de la fuente sea exacto!
+normal = { family = "FiraMono Nerd Font", style = "Regular" }
+bold = { family = "FiraMono Nerd Font", style = "Bold" }
+italic = { family = "FiraMono Nerd Font", style = "Italic" }
+size = 16.0
+
+[bell]
+# Equivalente a 'enable_audio_bell no'
+# Desactiva el sonido de la campana
+duration = 0
+
+[colors]
+# Tema: Catppuccin Mocha
+primary = { background = "0x1e1e2e", foreground = "0xcdd6f4" }
+cursor = { text = "0x1e1e2e", cursor = "0xf5e0dc" }
+normal = { black = "0x45475a", red = "0xf38ba8", green = "0xa6e3a1", yellow = "0xf9e2af", blue = "0x89b4fa", magenta = "0xf5c2e7", cyan = "0x94e2d5", white = "0xbac2de" }
+bright = { black = "0x585b70", red = "0xf38ba8", green = "0xa6e3a1", yellow = "0xf9e2af", blue = "0x89b4fa", magenta = "0xf5c2e7", cyan = "0x94e2d5", white = "0xa6adc8" }
+
+[cursor]
+style = { shape = "Block", blinking = "On" }
