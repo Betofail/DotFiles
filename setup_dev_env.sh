@@ -1,276 +1,218 @@
 #!/bin/bash
+# ===================================================================================
+#   Script de Instalación y Configuración de Entorno de Desarrollo para Arch Linux
+#   Refactorizado por: Asistente de Programación
+# ===================================================================================
 
-# Colores para mejor visualización
+# --- Configuración Inicial y Colores ---
+# Salir inmediatamente si un comando falla
+set -e
+
+# Colores para una mejor legibilidad
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 YELLOW='\033[0;33m'
-NC='\033[0m' # No Color
-
-echo -e "${BLUE}=== Arch Linux Developer Toolkit ===${NC}"
-echo "Fecha: $(date '+%Y-%m-%d %H:%M:%S')"
-echo "Usuario: $USER"
-
-# Crear directorio para guardar logs
-mkdir -p ~/.devtools_setup
-LOGFILE=~/.devtools_setup/install_log_$(date '+%Y%m%d_%H%M%S').log
+NC='\033[0m'
 
 # --- Funciones de Utilidad ---
-
-# Función para imprimir mensajes formateados y guardarlos en el log
 log() {
-  echo -e "${BLUE}>>> $1${NC}"
-  echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" >>$LOGFILE
+  echo -e "\n${BLUE}>>> $1${NC}"
 }
 
-# Función para verificar si un comando está disponible
 check_command() {
-  if command -v $1 &>/dev/null; then
-    echo -e "${GREEN}✓ $1 está instalado${NC}"
-    return 0
-  else
-    echo -e "${RED}✗ $1 no está instalado${NC}"
-    return 1
-  fi
-}
-
-# --- Funciones de Limpieza ---
-
-# Función para eliminar configuraciones de alias y funciones previas
-remove_old_configs() {
-  log "Eliminando configuraciones de shell previas (aliases, funciones, etc.)"
-
-  # Eliminar archivos de configuración
-  if [ -f ~/.bash_aliases ]; then
-    rm ~/.bash_aliases
-    echo -e "${GREEN}✓ Archivo ~/.bash_aliases eliminado.${NC}"
-  fi
-
-  if [ -f ~/.bash_functions ]; then
-    rm ~/.bash_functions
-    echo -e "${GREEN}✓ Archivo ~/.bash_functions eliminado.${NC}"
-  fi
-
-  if [ -f ~/.load_now ]; then
-    rm ~/.load_now
-    echo -e "${GREEN}✓ Archivo ~/.load_now eliminado.${NC}"
-  fi
-
-  # Limpiar .bashrc de las líneas que cargaban esos archivos
-  if [ -f ~/.bashrc ]; then
-    log "Limpiando ~/.bashrc..."
-    # Usar sed para eliminar las líneas que contienen las cadenas específicas
-    sed -i '/# Cargar aliases/d' ~/.bashrc
-    sed -i '/if \[ -f ~\/\.bash_aliases \]; then/,/fi/d' ~/.bashrc
-    sed -i '/\. ~\/\.bash_aliases/d' ~/.bashrc
-
-    sed -i '/# Cargar funciones/d' ~/.bashrc
-    sed -i '/if \[ -f ~\/\.bash_functions \]; then/,/fi/d' ~/.bashrc
-    sed -i '/\. ~\/\.bash_functions/d' ~/.bashrc
-
-    sed -i '/starship init/d' ~/.bashrc
-    sed -i '/mise activate/d' ~/.bashrc
-    sed -i '/FZF_DEFAULT_COMMAND/d' ~/.bashrc
-    sed -i '/FZF_DEFAULT_OPTS/d' ~/.bashrc
-    sed -i '/fzf\/key-bindings/d' ~/.bashrc
-    sed -i '/fzf\/completion/d' ~/.bashrc
-    echo -e "${GREEN}✓ Archivo ~/.bashrc limpiado de configuraciones previas.${NC}"
-  fi
-
-  log "Limpieza de configuraciones de shell completada."
-}
-
-# --- Funciones de Instalación y Configuración (Solo para Arch) ---
-
-install_docker_arch() {
-  log "Verificando Docker, Docker Compose y Docker Buildx"
-
-  local packages_to_install=()
-  check_command docker || packages_to_install+=("docker")
-  check_command docker-compose || packages_to_install+=("docker-compose")
-  check_command docker-buildx || packages_to_install+=("docker-buildx")
-
-  if [ ${#packages_to_install[@]} -gt 0 ]; then
-    log "Instalando paquetes de Docker: ${packages_to_install[*]}"
-    sudo pacman -S --noconfirm "${packages_to_install[@]}"
-
-    log "Iniciando y habilitando el servicio Docker"
-    sudo systemctl start docker
-    sudo systemctl enable docker
-
-    log "Agregando usuario $USER al grupo docker"
-    sudo usermod -aG docker $USER
-    log "Es necesario cerrar sesión y volver a iniciarla para que los cambios de grupo tengan efecto."
-  else
-    log "Docker, Docker Compose y Docker Buildx ya están instalados."
-  fi
-}
-
-install_cargo_arch() {
-  log "Verificando Rust y Cargo"
-  if check_command cargo; then
-    log "Cargo ya está instalado."
-  else
-    log "Instalando Rust y Cargo"
-    sudo pacman -S --noconfirm rust
-  fi
-}
-
-install_yay() {
-  if ! command -v yay &>/dev/null; then
-    log "Instalando yay (gestor de AUR)"
-    # Se necesita base-devel y git, nos aseguramos de que estén
-    sudo pacman -S --needed --noconfirm base-devel git
-    git clone https://aur.archlinux.org/yay.git /tmp/yay
-    (cd /tmp/yay && makepkg -si --noconfirm)
-    rm -rf /tmp/yay
-  else
-    log "yay ya está instalado."
-  fi
-}
-
-install_arch_tools() {
-  log "Actualizando sistema"
-  sudo pacman -Syu --noconfirm
-
-  # Instalar dependencias base y herramientas esenciales desde repositorios oficiales
-  log "Instalando herramientas esenciales desde repositorios oficiales"
-  sudo pacman -S --needed --noconfirm \
-    git curl wget unzip \
-    man-db man-pages \
-    neovim httpie jq htop \
-    starship fzf \
-    pgcli mycli \
-    ffmpegthumbnailer unarchiver poppler fd ripgrep \
-    zellij lazygit yazi-fm \
-    bat bottom eza git-delta
-
-  # Instalar herramientas desde AUR usando yay
-  log "Instalando herramientas adicionales desde AUR"
-  install_yay
-  yay -S --needed --noconfirm lazydocker ctop dive k9s go-yq
-}
-
-install_mise() {
-  log "Instalando mise (gestor de versiones de lenguajes)"
-  if ! command -v mise &>/dev/null; then
-    curl https://mise.run | sh
-    log "Mise instalado. Añade 'eval \"\$(~/.local/bin/mise activate bash)\"' a tu .bashrc manualmente si lo necesitas."
-  else
-    log "mise ya está instalado."
-  fi
-}
-
-configure_starship() {
-  log "Configurando Starship para Bash"
-  if ! command -v starship &>/dev/null; then
-    log "Starship no está instalado. Omitiendo configuración."
-    return
-  fi
-
-  # Añadir la inicialización de Starship a .bashrc si no existe
-  if ! grep -q 'eval "$(starship init bash)"' ~/.bashrc; then
-    log "Agregando la inicialización de Starship a ~/.bashrc"
-    echo -e '\n# Inicializar Starship para un prompt personalizado\neval "$(starship init bash)"' >>~/.bashrc
-    echo -e "${GREEN}✓ Starship añadido a ~/.bashrc.${NC}"
-  else
-    log "Starship ya está configurado en ~/.bashrc."
-  fi
-
-  # --- Lógica de Enlace Simbólico ---
-  local DOTFILES_DIR
-  DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
-  local SOURCE_STARSHIP_CONFIG="$DOTFILES_DIR/starship/starship.toml"
-  local DEST_STARSHIP_CONFIG="$HOME/.config/starship.toml"
-
-  # Verificar que tu archivo de configuración exista en el repositorio
-  if [ ! -f "$SOURCE_STARSHIP_CONFIG" ]; then
-    log "${RED}Error: No se encontró 'starship.toml' en la raíz de tu repositorio (${DOTFILES_DIR}).${NC}"
-    log "${YELLOW}Omitiendo creación de enlace simbólico para Starship.${NC}"
-    return
-  fi
-
-  # Crear el directorio ~/.config si no existe
-  mkdir -p "$(dirname "$DEST_STARSHIP_CONFIG")"
-
-  # Manejar configuración existente en el destino
-  if [ -e "$DEST_STARSHIP_CONFIG" ]; then
-    if [ -L "$DEST_STARSHIP_CONFIG" ] && [ "$(readlink "$DEST_STARSHIP_CONFIG")" = "$SOURCE_STARSHIP_CONFIG" ]; then
-      log "El enlace simbólico para Starship ya está configurado correctamente."
-      return
-    else
-      log "Haciendo copia de seguridad de la configuración de Starship existente..."
-      mv "$DEST_STARSHIP_CONFIG" "${DEST_STARSHIP_CONFIG}.bak.$(date +%Y%m%d_%H%M%S)"
-      echo -e "${GREEN}✓ Copia de seguridad creada.${NC}"
-    fi
-  fi
-
-  # Crear el enlace simbólico
-  log "Creando enlace simbólico para starship.toml"
-  ln -s "$SOURCE_STARSHIP_CONFIG" "$DEST_STARSHIP_CONFIG"
-  if [ $? -eq 0 ]; then
-    echo -e "${GREEN}✓ Archivo de configuración de Starship enlazado con éxito.${NC}"
-  else
-    echo -e "${RED}Error al crear el enlace simbólico para Starship.${NC}"
-  fi
+  command -v "$1" &>/dev/null
 }
 
 # --- Función Principal ---
-
 main() {
-  # 1. Verificar que estamos en Arch Linux
+  # Verificar que estamos en Arch Linux
   if [ ! -f /etc/arch-release ]; then
-    echo -e "${RED}Este script está diseñado para funcionar exclusivamente en Arch Linux.${NC}"
-    echo -e "${RED}Saliendo...${NC}"
+    echo -e "${RED}Error: Este script está diseñado exclusivamente para Arch Linux.${NC}"
     exit 1
   fi
 
-  log "Distribución Arch Linux confirmada."
+  # Determinar la ruta del repositorio de DotFiles
+  local DOTFILES_DIR
+  DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
+  log "Repositorio de DotFiles detectado en: $DOTFILES_DIR"
 
-  # 2. Eliminar configuraciones previas de alias y funciones
-  remove_old_configs
+  # --- Orquestación de la Instalación ---
+  install_packages
+  setup_terminal_and_multiplexer "$DOTFILES_DIR"
+  setup_symlinks "$DOTFILES_DIR"
+  configure_shell
+  setup_languages
+  setup_neovim
+  setup_docker
 
-  # 3. Instalar componentes clave
-  log "Comenzando instalación de componentes..."
-  install_docker_arch
-  install_cargo_arch
-
-  # 4. Instalar el resto de herramientas para Arch
-  log "Instalando herramientas de desarrollo..."
-  install_arch_tools
-
-  # 5. Instalar mise
-  install_mise
-
-  # 6. Configurar Starship
-  configure_starship
-
-  # 7. Verificación final
-  log "Validando la instalación de herramientas clave..."
-  local tools_to_check=("docker" "docker-compose" "cargo" "nvim" "git" "eza" "bat" "yazi" "zellij" "lazygit" "lazydocker" "k9s" "mise" "starship")
-  local errors=0
-  echo -e "\n${BLUE}=== Verificación Final de Herramientas ===${NC}"
-  for tool in "${tools_to_check[@]}"; do
-    if ! check_command $tool; then
-      ((errors++))
-    fi
-  done
-
-  if [ $errors -gt 0 ]; then
-    echo -e "\n${YELLOW}⚠ Se encontraron $errors problemas durante la instalación.${NC}"
-    echo -e "${YELLOW}Revisa el log para más detalles: $LOGFILE${NC}"
-  else
-    echo -e "\n${GREEN}✓ Todas las herramientas clave fueron instaladas y verificadas.${NC}"
-  fi
-
-  echo -e "\n${GREEN}=====================================${NC}"
-  echo -e "${GREEN}✓ ¡Proceso completado!${NC}"
-  echo -e "${GREEN}=====================================${NC}"
-  echo -e "${BLUE}→ Se han instalado y verificado las herramientas de desarrollo.${NC}"
-  echo -e "${BLUE}→ Tu configuración de Starship ha sido enlazada desde tu repositorio.${NC}"
-  echo -e "${YELLOW}IMPORTANTE: Cierra sesión y vuelve a iniciarla para usar Docker sin sudo y ver el nuevo prompt.${NC}"
-  log "Script finalizado."
+  log "${GREEN}¡Proceso completado con éxito!${NC}"
+  echo -e "${YELLOW}IMPORTANTE: Reinicia tu terminal o cierra sesión y vuelve a iniciarla para aplicar todos los cambios.${NC}"
 }
 
-# Ejecutar el script
+# --- Configuración de Terminal y Multiplexor ---
+
+setup_terminal_and_multiplexer() {
+  local dotfiles_repo_path="$1"
+  log "Configurando Alacritty y Tmux..."
+
+  # --- Alacritty ---
+  local alacritty_config_source="$dotfiles_repo_path/.config/alacritty/alacritty.toml"
+  local alacritty_config_target="$HOME/.config/alacritty/alacritty.toml"
+  if [ -f "$alacritty_config_source" ]; then
+    mkdir -p "$(dirname "$alacritty_config_target")"
+    ln -sf "$alacritty_config_source" "$alacritty_config_target"
+    echo -e "  ${GREEN}✓ Enlace simbólico para Alacritty creado.${NC}"
+  else
+    echo -e "  ${YELLOW}Advertencia: No se encontró alacritty.toml en tu repositorio. Omitiendo enlace.${NC}"
+  fi
+
+  # --- Tmux ---
+  local tmux_config_source="$dotfiles_repo_path/.tmux.conf"
+  local tmux_config_target="$HOME/.tmux.conf"
+  if [ -f "$tmux_config_source" ]; then
+    # Añadir la configuración de navegación con Neovim al archivo de tmux
+    # Esto asegura que siempre esté presente, incluso si actualizas tu .tmux.conf
+    local tmux_nav_config="\n# Habilitar navegación inteligente entre Neovim y tmux\nis_vim=\"ps -o state= -o comm= -t '#{pane_tty}' | grep -iqE '^[^TXZ ]+ +(\\\\S+\\\\/)?g?(view|n?vim?x?)(diff)?$'\"\nbind-key -n 'C-h' if-shell \"\$is_vim\" 'send-keys C-h' 'select-pane -L'\nbind-key -n 'C-j' if-shell \"\$is_vim\" 'send-keys C-j' 'select-pane -D'\nbind-key -n 'C-k' if-shell \"\$is_vim\" 'send-keys C-k' 'select-pane -U'\nbind-key -n 'C-l' if-shell \"\$is_vim\" 'send-keys C-l' 'select-pane -R'"
+
+    # Crear el enlace simbólico
+    ln -sf "$tmux_config_source" "$tmux_config_target"
+
+    # Añadir la configuración de navegación si no existe
+    if ! grep -q "is_vim" "$tmux_config_target"; then
+      echo -e "$tmux_nav_config" >>"$tmux_config_target"
+      echo -e "  ${GREEN}✓ Configuración de navegación para Tmux añadida.${NC}"
+    fi
+    echo -e "  ${GREEN}✓ Enlace simbólico para Tmux creado.${NC}"
+  else
+    echo -e "  ${YELLOW}Advertencia: No se encontró .tmux.conf en tu repositorio. Omitiendo enlace.${NC}"
+  fi
+}
+
+# --- Módulos de Instalación y Configuración ---
+
+install_packages() {
+  log "Actualizando sistema e instalando paquetes..."
+  sudo pacman -Syu --noconfirm
+
+  # Paquetes de los repositorios oficiales de Arch
+  local pacman_packages=(
+    git base-devel curl wget unzip neovim starship fzf ripgrep fd
+    zoxide bat eza bottom lazygit tmux docker docker-compose rust
+    man-db man-pages httpie jq htop pgcli mycli
+    ffmpegthumbnailer unarchiver poppler
+  )
+
+  # Paquetes del AUR
+  local aur_packages=(
+    lazydocker ctop dive k9s go-yq yazi-fm
+  )
+
+  log "Instalando paquetes de Pacman..."
+  sudo pacman -S --needed --noconfirm "${pacman_packages[@]}"
+
+  # Instalar yay (AUR Helper) si no existe
+  if ! check_command yay; then
+    log "Instalando yay (gestor de AUR)..."
+    git clone https://aur.archlinux.org/yay.git /tmp/yay
+    (cd /tmp/yay && makepkg -si --noconfirm)
+    rm -rf /tmp/yay
+  fi
+
+  log "Instalando paquetes de AUR con yay..."
+  yay -S --needed --noconfirm "${aur_packages[@]}"
+}
+
+setup_symlinks() {
+  local dotfiles_repo_path="$1"
+  log "Creando enlaces simbólicos para las configuraciones (DotFiles)..."
+
+  # Función interna para crear un enlace de forma segura
+  create_symlink() {
+    local source_path="$1"
+    local target_path="$2"
+
+    if [ ! -e "$source_path" ]; then
+      echo -e "  ${YELLOW}Advertencia: El archivo de origen $source_path no existe. Omitiendo enlace.${NC}"
+      return
+    fi
+
+    mkdir -p "$(dirname "$target_path")"
+    if [ -e "$target_path" ] && [ ! -L "$target_path" ]; then
+      echo -e "  ${YELLOW}Haciendo backup de $target_path existente...${NC}"
+      mv "$target_path" "$target_path.bak.$(date +%F-%T)"
+    fi
+
+    rm -f "$target_path"
+    ln -s "$source_path" "$target_path"
+    echo -e "  ${GREEN}✓ Enlace creado: $source_path -> $target_path${NC}"
+  }
+
+  # Enlazar todas tus configuraciones
+  create_symlink "$dotfiles_repo_path/.config/nvim" "$HOME/.config/nvim"
+  create_symlink "$dotfiles_repo_path/.config/starship/starship.toml" "$HOME/.config/starship.toml"
+  create_symlink "$dotfiles_repo_path/.config/yazi" "$HOME/.config/yazi"
+  create_symlink "$dotfiles_repo_path/.tmux.conf" "$HOME/.tmux.conf"
+  create_symlink "$dotfiles_repo_path/.bashrc" "$HOME/.bashrc"
+  create_symlink "$dotfiles_repo_path/.config/mise/config.toml" "$HOME/.config/mise/config.toml"
+}
+
+configure_shell() {
+  log "Configurando el archivo .bashrc..."
+
+  # Función para añadir una línea a .bashrc si no existe
+  add_to_bashrc_if_missing() {
+    local line_to_add="$1"
+    local file="$HOME/.bashrc"
+    if ! grep -qF -- "$line_to_add" "$file"; then
+      echo -e "\n$line_to_add" >>"$file"
+      echo -e "  ${GREEN}✓ Añadido a .bashrc: $line_to_add${NC}"
+    else
+      echo -e "  -> Ya existe en .bashrc: $line_to_add"
+    fi
+  }
+
+  # Las configuraciones específicas del shell deben estar en tu .bashrc del repositorio
+  # Aquí solo nos aseguramos de que las herramientas se inicialicen
+  add_to_bashrc_if_missing '# Inicializar Starship'
+  add_to_bashrc_if_missing 'eval "$(starship init bash)"'
+  add_to_bashrc_if_missing '# Inicializar Zoxide'
+  add_to_bashrc_if_missing 'eval "$(zoxide init bash)"'
+  add_to_bashrc_if_missing '# Inicializar Mise'
+  add_to_bashrc_if_missing 'eval "$(~/.local/bin/mise activate bash)"'
+}
+
+setup_languages() {
+  log "Instalando Mise (gestor de versiones de lenguajes)..."
+  if ! check_command mise; then
+    curl https://mise.run | sh
+  fi
+
+  log "Instalando versiones de lenguajes con Mise (node, python, java)..."
+  ~/.local/bin/mise install
+}
+
+setup_neovim() {
+  log "Instalando plugins de Neovim (puede tardar varios minutos)..."
+  # Usar --headless para que no se abra la UI, sincronizar plugins y salir
+  nvim --headless "+Lazy! sync" +qa
+  log "${GREEN}✓ Plugins de Neovim instalados y sincronizados.${NC}"
+}
+
+setup_docker() {
+    log "Configurando Docker..."
+    if check_command docker; then
+        sudo systemctl enable docker
+        sudo systemctl start docker
+        if ! groups "$USER" | grep -q '\bdocker\b'; then
+            log "Agregando el usuario $USER al grupo de Docker..."
+            sudo usermod -aG docker "$USER"
+            echo -e "  ${YELLOW}Necesitarás cerrar sesión y volver a iniciarla para usar Docker sin sudo.${NC}"
+        else
+            echo -e "  -> El usuario ya pertenece al grupo de Docker."
+        fi
+    fi
+}
+
+# --- Ejecutar Script ---
 main
